@@ -58,5 +58,6 @@ dkms.conf
 asm_out/
 a.out
 .cache/
+compile_commands.json
 
 
