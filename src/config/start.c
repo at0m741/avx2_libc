@@ -1,10 +1,16 @@
+__attribute__((noreturn)) void exit(int status)
+{
+	(void)status;
+	while(1) {}
+}
+
+
+
 #include <config.h>
 
 
 /* _start is the entry point of this new libc */
 void _start(void) __attribute__((naked));
-
-void exit(int status) __attribute__((noreturn));
 
 void _start(void)
 {
@@ -49,32 +55,6 @@ void _start(void)
 #endif
 }
 
-void _exit(int status)
-{
-#ifdef __APPLE__
-    __asm__ __volatile__
-    (
-        "mov rax, 0x2000001\n"       /* Syscall number for exit (macOS) */
-        "mov rdi, %0\n"              /* Move status into rdi */
-        "syscall\n"                  /* Make the syscall */
-        :
-        : "r" ((long)status)         /* Input operand */
-        : "rax", "rdi"
-    );
-#else
-    __asm__ __volatile__
-    (
-        "mov $60, %%rax\n"           /* Syscall number for exit (Linux) */
-        "mov %0, %%rdi\n"            /* Move status into rdi */
-        "syscall\n"                  /* Make the syscall */
-        :
-        : "r" ((long)status)
-        : "rax", "rdi"
-    );
-#endif
-
-    while (1);  /* Ensure the function does not return */
-}
 
 typedef int (*main_func)(int, char**, char**);
 

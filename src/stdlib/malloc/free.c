@@ -1,5 +1,6 @@
 
 #include "malloc.h"
+#include "config.h"
 
 extern Block *freelist;
 extern size_t block_size;
@@ -86,3 +87,6 @@ void _free(void *ptr) {
         coalesce_free_blocks();
     }
 }
+
+
+simpl_weak_alias(free, _free)

@@ -1,8 +1,6 @@
 #include "malloc.h"
+#include "config.h"
 
-#if !defined(__HAS_ASSERT__)
-#define assert 
-#endif
 
 Block *freelist = NULL;
 int allocated_blocks = 0;
@@ -107,3 +105,6 @@ void *_aligned_alloc(size_t alignment, size_t size) {
 
     return block->aligned_address;
 }
+
+
+simpl_weak_alias(malloc, _malloc)
