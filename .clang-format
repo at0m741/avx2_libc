@@ -1,6 +1,6 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
-ColumnLimit: 80
+ColumnLimit: 100
 AlignConsecutiveDeclarations: true
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 4
@@ -8,9 +8,16 @@ BreakConstructorInitializersBeforeComma: false
 BreakConstructorInitializers: BeforeColon
 AllowAllConstructorInitializersOnNextLine: false
 
-# Define directive settings
-IndentPPDirectives: AfterHash
+# Use custom brace wrapping settings
+BreakBeforeBraces: Custom
 
-# Comment settings
-CommentPragmas: '^ IWYU pragma:'
-IndentPragmas: true
+BraceWrapping:
+  AfterFunction: true          # Place opening brace on a new line after functions
+  SplitEmptyFunction: false    # Keep empty functions on a single line
+  AfterClass: true             # Place opening brace on a new line after classes
+  AfterNamespace: true         # Place opening brace on a new line after namespaces
+  AfterControlStatement: true  # Place opening brace on a new line after control statements
+  SplitEmptyRecord: false      # Keep empty classes/structs on a single line
+
+# Indent preprocessor directives after the hash symbol
+IndentPPDirectives: AfterHash
