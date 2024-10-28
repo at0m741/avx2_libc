@@ -21,7 +21,7 @@ PIC_FLAGS = -fPIC
 # Define linker flags and version script
 # CFLAGS += -fvisibility=hidden
 LDFLAGS = -nostartfiles -nodefaultlibs
-LDFLAGS += -Wl,--version-script=version.map -v
+LDFLAGS += -Wl,--version-script=Version.v -v
 
 ifeq ($(TARGET), apple)
 	LDFLAGS += -lc -lSystem
