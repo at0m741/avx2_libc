@@ -1,5 +1,5 @@
-LIB_NAME = SIMPL_libc.a
-SO_NAME = SIMPL_libc.so
+LIB_NAME = Slibc.a
+SO_NAME = Slibc.so
 OBJ_DIR = obj
 SRC_DIR = src
 ASM_SRC_DIR = asm_src
