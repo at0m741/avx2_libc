@@ -18,43 +18,41 @@ __builtin_ctz() is a builtin function that returns the number of trailing 0-bits
 #include <immintrin.h>
 #include <stdlib.h>
 
-size_t _strlen_avx(const char *str)
+static inline size_t _strlen_avx(const char *str)
 {
-    const char *original_ptr = str;
-    __m256i     ymm_zero = _mm256_set1_epi8(0);
+    if (!str) return 0;
 
-    uintptr_t misalignment = (uintptr_t)str & 31;
-    if (misalignment != 0)
+    const char *start = str;
+    __m256i zero = _mm256_set1_epi8(0);
+    uintptr_t addr = (uintptr_t)str;
+    size_t mis = addr & 31;
+
+    if (mis != 0)
     {
-        size_t  offset = 32 - misalignment;
-        __m256i ymm_data = _mm256_loadu_si256((__m256i *)str);
-        __m256i cmp_result = _mm256_cmpeq_epi8(ymm_zero, ymm_data);
-        int32_t mask = _mm256_movemask_epi8(cmp_result);
-
-        mask >>= misalignment;
+        size_t partial = 32 - mis; 
+        __m256i data = _mm256_loadu_si256((const __m256i*)str);
+        __m256i cmp  = _mm256_cmpeq_epi8(zero, data);
+        int mask     = _mm256_movemask_epi8(cmp);
 
         if (mask != 0)
         {
-            int32_t index = __builtin_ctz(mask);
-            return (size_t)(str + index - original_ptr);
+            int idx = __builtin_ctz(mask);
+            return (size_t)(str + idx - start);
         }
-
-        str += offset;
+        str += partial;  
     }
 
-    while (1)
+    for (;;)
     {
-        _mm_prefetch(str + 32, _MM_HINT_T0);
-        __m256i ymm_data = _mm256_load_si256((__m256i *)str);
-        __m256i cmp_result = _mm256_cmpeq_epi8(ymm_zero, ymm_data);
-        int32_t mask = _mm256_movemask_epi8(cmp_result);
+        __m256i data = _mm256_load_si256((const __m256i*)str);
+        __m256i cmp  = _mm256_cmpeq_epi8(zero, data);
+        int mask     = _mm256_movemask_epi8(cmp);
 
         if (mask != 0)
         {
-            int32_t index = __builtin_ctz(mask);
-            return (size_t)(str + index - original_ptr);
+            int idx = __builtin_ctz(mask);
+            return (size_t)(str + idx - start);
         }
-
         str += 32;
     }
     return 0;
