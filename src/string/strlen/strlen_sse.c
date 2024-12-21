@@ -14,44 +14,42 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-size_t _strlen_sse(const char *s)
+static inline size_t _strlen_sse(const char *str)
 {
-    if (__builtin_expect(s == NULL, 0))
-        return 0;
+    if (!str) return 0;
 
-    const char *ptr = s;
-    __m128i     zero = _mm_setzero_si128();
-    size_t      misalignment = (size_t)s & 15;
-    /*
-     * If the pointer is not aligned on a 16 bytes boundary,
-     * the function handles the initial bytes separately.
-     * It loads 16 bytes from the memory pointed by ptr and checks if there is a zero byte in the
-     * chunk.
-     */
-    if (misalignment)
-    {
-        __m128i  data = _mm_loadu_si128((const __m128i *)s);
-        __m128i  cmp = _mm_cmpeq_epi8(data, zero);
-        uint32_t mask = _mm_movemask_epi8(cmp);
+    const char *start = str;
+    __m128i zero = _mm_set1_epi8(0);
+    uintptr_t addr = (uintptr_t)str;
+    size_t mis = addr & 15;
 
-        if (mask)
-            return (s - ptr) + __builtin_ctz(mask);
-        s += 16 - misalignment;
-    }
-    /*
-     * Prefetch the next 32 bytes to improve performance.
-     * The _MM_HINT_NTA hint is used to indicate that the data is not accessed again soon.
-     * This hint is useful when the data is not accessed sequentially.
-     * The _MM_HINT_T0 hint is used to indicate that the data is accessed soon.
-     * This hint is useful when the data is accessed sequentially.
-     */
-    while (1)
+    if (mis != 0)
     {
-        __m128i  data = _mm_loadu_si128((const __m128i *)s);
-        __m128i  cmp = _mm_cmpeq_epi8(data, zero);
-        uint32_t mask = _mm_movemask_epi8(cmp);
-        if (mask)
-            return (s - ptr) + __builtin_ctz(mask);
-        s += 16;
+        size_t partial = 16 - mis;
+        __m128i data = _mm_loadu_si128((const __m128i*)str);
+        __m128i cmp  = _mm_cmpeq_epi8(zero, data);
+        int mask     = _mm_movemask_epi8(cmp);
+
+        if (mask != 0)
+        {
+            int idx = __builtin_ctz(mask);
+            return (size_t)(str + idx - start);
+        }
+        str += partial;
     }
+
+    for (;;)
+    {
+        __m128i data = _mm_load_si128((const __m128i*)str);
+        __m128i cmp  = _mm_cmpeq_epi8(zero, data);
+        int mask     = _mm_movemask_epi8(cmp);
+
+        if (mask != 0)
+        {
+            int idx = __builtin_ctz(mask);
+            return (size_t)(str + idx - start);
+        }
+        str += 16;
+    }
+    return 0;
 }
